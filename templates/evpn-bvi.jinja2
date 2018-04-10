@@ -1,0 +1,108 @@
+<config
+	xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
+	xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+	<interface-configurations
+		xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-ifmgr-cfg">
+		<interface-configuration>
+			<active>act</active>
+			<interface-name>{{ bvi }}</interface-name>
+			<description>L3 {{ description }}</description>
+			<interface-virtual/>
+			<bvi
+				xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-l2vpn-cfg">
+				<host-routing/>
+			</bvi>
+			<ipv4-network
+				xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-ipv4-io-cfg">
+				<addresses>
+					<primary>
+						<address>{{ ipv4 }}</address>
+						<netmask>{{ netmask }}</netmask>
+					</primary>
+				</addresses>
+			</ipv4-network>
+			{% if ipv6 is defined %}
+			<ipv6-network xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-ipv6-ma-cfg">
+                <addresses>
+                    <regular-addresses>
+                        <regular-address>
+                            <address>{{ ipv6 }}</address>
+                            <prefix-length>{{ prefix }}</prefix-length>
+                            <zone>0</zone>
+                        </regular-address>
+                    </regular-addresses>
+                </addresses>
+            </ipv6-network>
+            {% endif %}
+			<mac-addr xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-mdrv-lib-cfg">{{ mac }}</mac-addr>
+		</interface-configuration>
+        {% for connection in connected_interfaces %}
+        <interface-configuration>
+                <active>act</active>
+                <interface-name>{{ connection.interface }}.{{ connection.id }}</interface-name>
+                <description>uplink {{ description }}</description>
+                <interface-mode-non-physical>l2-transport</interface-mode-non-physical>
+                <ethernet-service
+                    xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-l2-eth-infra-cfg">
+                    <encapsulation>
+                        <outer-tag-type>match-dot1q</outer-tag-type>
+                        <outer-range1-low>{{ connection.id }}</outer-range1-low>
+                    </encapsulation>
+                    <rewrite>
+                        <rewrite-type>pop1</rewrite-type>
+                    </rewrite>
+                </ethernet-service>
+        </interface-configuration>
+        {% endfor %}
+	</interface-configurations>
+	<l2vpn
+		xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-l2vpn-cfg">
+		<database>
+			<bridge-domain-groups>
+				<bridge-domain-group>
+					<name>EVPN_ALL_ACTIVE</name>
+					<bridge-domains>
+						<bridge-domain>
+							<name>EVPN_{{ evi }}</name>
+							<bridge-description>bridge for {{ name }}</bridge-description>
+							<bd-attachment-circuits>
+							{% for connection in connected_interfaces %}
+                                <bd-attachment-circuit>
+                                    <name>{{ connection.interface }}.{{ connection.id }}</name>
+                                </bd-attachment-circuit>
+                             {% endfor %}
+                            </bd-attachment-circuits>
+							<routed-interfaces>
+								<routed-interface>
+									<interface-name>{{ bvi }}</interface-name>
+									<routed-interface-split-horizon-group>
+										<routed-interface-split-horizon-group-core/>
+									</routed-interface-split-horizon-group>
+								</routed-interface>
+							</routed-interfaces>
+							<bridge-domain-evis>
+								<bridge-domain-evi>
+									<eviid>{{ evi }}</eviid>
+								</bridge-domain-evi>
+							</bridge-domain-evis>
+						</bridge-domain>
+					</bridge-domains>
+				</bridge-domain-group>
+			</bridge-domain-groups>
+		</database>
+	</l2vpn>
+	<evpn
+		xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-l2vpn-cfg">
+		<enable/>
+		<evpn-tables>
+			<evpnevis>
+				<evpnevi>
+					<eviid>{{ evi }}</eviid>
+					<evi-advertise-mac>
+						<enable/>
+					</evi-advertise-mac>
+				</evpnevi>
+			</evpnevis>
+		</evpn-tables>
+	</evpn>
+</config>

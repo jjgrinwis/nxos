@@ -1,0 +1,43 @@
+# YAML file describing e-quest customers contruct
+# each customer has
+#	- unique evpn evi id
+# - unique name
+#	- one ipv4 address BVI
+#	- possible one ipv6 address BVI
+# 	- one or more interfaces with vlan-id attached to EVI
+---
+devices:
+  - 10.160.35.233
+  - 10.160.35.232
+base_mac: 6c:9c:ed:06
+customers:
+  - name: pietje
+    evi: 1000
+    ipv4: 10.10.10.1/24
+    ipv6: 2a00:5140:dc07:1201::1/64
+    connected_interfaces:
+      - interface: Bundle-Ether1
+        id: 1001
+      - interface: Bundle-Ether1
+        id: 1002
+  - name: puk
+    evi: 1001
+    ipv4: 10.10.20.1/24
+    connected_interfaces:
+      - interface: Bundle-Ether1
+        id: 2000
+  - name: randys snowboard shop
+    evi: 1009
+    ipv4: 10.10.30.1/24
+    connected_interfaces:
+      - interface: Bundle-Ether1
+        id: 2030
+  - name: klaasie
+    evi: 1002
+    ipv4: 10.10.30.1/24
+    ipv6: 2a00:5140:dc07:1203::1/64
+    connected_interfaces:
+      - interface: Bundle-Ether1
+        id: 3000
+      - interface: Bundle-Ether1
+        id: 3001
